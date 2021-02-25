@@ -19,6 +19,7 @@ const char *Y_LOCATION [8] = {"8", "7", "6", "5", "4", "3", "2", "1"};
 
 /*----------------------------------------------------------------
 - Missing board cleanup function
+- Work on isLegalCapture
 ----------------------------------------------------------------*/
 
 // Global variables
@@ -88,10 +89,24 @@ void printBoard()
 }
 
 // check if the move is legal 
+
 static int isLegalMove(int xSrc, int ySrc, int xDst, int yDst)
 {
     int piece = board[xSrc][ySrc];
     int pieceType = abs(piece);
+
+    // if the piecetype is queen
+    if(pieceType == QUEEN)
+    {
+        if(xSrc == xDst || ySrc == yDst) // moves like a rook
+        {
+            pieceType = ROOK;
+        }
+        else
+        {
+            pieceType = BISHOP; // moves like a bishop
+        }
+    }
 
     switch(pieceType)
     {
@@ -106,6 +121,7 @@ static int isLegalMove(int xSrc, int ySrc, int xDst, int yDst)
                         {
                             if(board[xDst][yDst] != EMPTY || board[xDst][yDst+1] != EMPTY) // check if path is not empty
                             {
+                                printf("invalid move: path is not empty\n");
                                 return 0;
                             }
                             else
@@ -120,6 +136,7 @@ static int isLegalMove(int xSrc, int ySrc, int xDst, int yDst)
                         {
                             if(board[xDst][yDst] != EMPTY) //check if path is empty
                             {
+                                printf("invalid move: path is not empty\n");
                                 return 0;
                             }
                             else
@@ -135,6 +152,7 @@ static int isLegalMove(int xSrc, int ySrc, int xDst, int yDst)
                     {
                         if(board[xDst][yDst] != EMPTY || board[xDst][yDst-1] != EMPTY) //check if path is not empty
                             {
+                                printf("invalid move: path is not empty\n");
                                 return 0;
                             }
                             else
@@ -148,6 +166,7 @@ static int isLegalMove(int xSrc, int ySrc, int xDst, int yDst)
                         {
                             if(board[xDst][yDst] != EMPTY) // check if path is not empty
                             {
+                                printf("invalid move: path is not empty\n");
                                 return 0;
                             }
                             else
@@ -158,6 +177,8 @@ static int isLegalMove(int xSrc, int ySrc, int xDst, int yDst)
                     }
                 }
             }
+            printf("invalid move: That is not how pawns move\n");
+            return 0;
             break;
 
         case ROOK:
@@ -165,10 +186,11 @@ static int isLegalMove(int xSrc, int ySrc, int xDst, int yDst)
             {
                 if(ySrc < yDst) // rook moving upwards
                 {
-                    for(int i=0; i<(yDst - ySrc); i++) 
+                    for(int i=1; i<(yDst - ySrc); i++) 
                     {
                         if(board[xDst][yDst-i] != EMPTY) // check if path is not empty
                         {
+                            printf("invalid move: path is not empty\n");
                             return 0;
                         }
                         else
@@ -179,10 +201,11 @@ static int isLegalMove(int xSrc, int ySrc, int xDst, int yDst)
                 }
                 else // rook moving downwards
                 {
-                    for(int i=0; i<(ySrc - yDst); i++)
+                    for(int i=1; i<(ySrc - yDst); i++)
                     {
                         if (board[xDst][yDst+i] != EMPTY) //check if path is not empty 
                         {
+                            printf("invalid move: path is not empty\n");
                             return 0;
                         }
                         else
@@ -196,10 +219,11 @@ static int isLegalMove(int xSrc, int ySrc, int xDst, int yDst)
             {
                 if(xSrc < yDst) // moves to the right
                 {
-                    for(int i=0; i<(xSrc - xDst); i++)
+                    for(int i=1; i<(xSrc - xDst); i++)
                     {
                         if(board[xDst-i][yDst] != EMPTY) // check if path is not empty
                         {
+                            printf("invalid move: path is not empty\n");
                             return 0; 
                         }
                         else
@@ -210,10 +234,11 @@ static int isLegalMove(int xSrc, int ySrc, int xDst, int yDst)
                 }
                 else // moves to the left
                 {
-                    for(int i=0; i<(xDst - xSrc); i++)
+                    for(int i=1; i<(xDst - xSrc); i++)
                     {
                         if(board[xDst+i][yDst] != EMPTY) // check if path is not empty
                         {
+                            printf("invalid move: path is not empty\n");
                             return 0; 
                         }
                         else
@@ -225,6 +250,7 @@ static int isLegalMove(int xSrc, int ySrc, int xDst, int yDst)
             }
             else // Not moving in a straight line
             {
+                printf("invalid move: It is not moving in a stright line\n");
                 return 0;
             }
             break;
@@ -236,6 +262,7 @@ static int isLegalMove(int xSrc, int ySrc, int xDst, int yDst)
             }
             else
             {
+                printf("invalid move: That is not how knights move\n");
                 return 0;
             }
             break;
@@ -243,45 +270,50 @@ static int isLegalMove(int xSrc, int ySrc, int xDst, int yDst)
         case BISHOP:
             if(abs(xSrc - xDst) != abs(ySrc - yDst)) // check if it has been moved diagonally
             {
+                printf("invalid move: It is not moving diagonally\n");
                 return 0;
             }
             
             if(xSrc < xDst && ySrc < yDst) // moves down and right
             {
-                for(int i=0; i<(xSrc - xDst); i++)
+                for(int i=1; i<(xSrc - xDst); i++)
                 {
                     if(board[xDst+i][yDst+i] != EMPTY) // check if path is not empty
                     {
+                        printf("invalid move: path is not empty\n");
                         return 0;
                     }
                 }
             }
             else if(xSrc < xDst && ySrc > yDst) // moves down and left
             {
-                for(int i=0; i<(xSrc - xDst); i++)
+                for(int i=1; i<(xSrc - xDst); i++)
                 {
                     if(board[xDst+i][yDst-i] != EMPTY) // check if path is not empty
                     {
+                        printf("invalid move: path is not empty\n");
                         return 0;
                     }
                 }
             }
             else if(xSrc > xDst && ySrc < yDst) // moves up and right
             {
-                for(int i=0; i<(xSrc - xDst); i++)
+                for(int i=1; i<(xSrc - xDst); i++)
                 {
                     if(board[xDst-i][yDst+i] != EMPTY) // check if path is not empty
                     {
+                        printf("invalid move: path is not empty\n");
                         return 0;
                     }
                 }
             }
             else // moves up and left
             {
-                for(int i=0; i<(xSrc - xDst); i++)
+                for(int i=1; i<(xSrc - xDst); i++)
                 {
                     if(board[xDst-i][yDst-i] != EMPTY) // check if path is not empty
                     {
+                        printf("invalid move: path is not empty\n");
                         return 0;
                     }
                 }
@@ -290,26 +322,65 @@ static int isLegalMove(int xSrc, int ySrc, int xDst, int yDst)
 
             break;
 
-        case QUEEN:
-            
-            break;
-
         case KING:
+            if(abs(xSrc - xDst) + abs(ySrc - yDst) != 1) // king can only move one spot
+            {
+                printf("invalid move: The king can only move one spot\n");
+                return 0;
+            }
+            return 1; // if the program has not returned 0 then the king is free to move
             break;
     }
+
+    printf("ERROR: No correct piecetype detected\n");
+    return 0; 
 }
 
 static int isLegalCapture(int xSrc, int ySrc, int xDst, int yDst)
 {
+    int piece = board[xSrc][ySrc];
     
+    //check for move legality
+    if(isLegalMove(xSrc, ySrc, xDst, yDst)) 
+    {
+        if(piece < 0) // if black piece
+        {
+            if(board[xDst][yDst] > 0)  // destination tile has a white piece
+            {
+                return 1;
+            }
+            else
+            {
+                printf("invalid capture: target tile needs to contain a white piece\n");
+                return 0;
+            }
+        }
+        else // else white piece
+        {
+            if(board[xDst][yDst] < 0)  // destination tile has a black piece
+            {
+                return 1;
+            }
+            else
+            {
+                printf("invalid capture: target tile needs to contain a black piece\n");
+                return 0;
+            }
+        }
+    }
+    else
+    {
+        printf("invalid capture: Move is not legal\n");
+        return 0;
+    }
 }
 
-move()
+void move()
 {
 
 }
 
-capture()
+void capture()
 {
 
 }
