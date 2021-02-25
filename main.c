@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 // Piece variable declaration
 #define WHITE 1
@@ -12,6 +13,9 @@
 #define QUEEN 5
 #define KING 6
 #define BOARD_LENGTH 8
+#define COMMAND_NUMBER 3
+#define COMMAND_LENGTH 10
+#define INPUT_LENGTH 30
 
 // board location arrays
 const char *X_LOCATION [8] = {"a", "b", "c", "d", "e", "f", "g", "h"};
@@ -248,11 +252,6 @@ static int isLegalMove(int xSrc, int ySrc, int xDst, int yDst)
                     }
                 }
             }
-            else // Not moving in a straight line
-            {
-                printf("invalid move: It is not moving in a stright line\n");
-                return 0;
-            }
             break;
 
         case KNIGHT:
@@ -375,20 +374,121 @@ static int isLegalCapture(int xSrc, int ySrc, int xDst, int yDst)
     }
 }
 
-void move()
+// function checks if move is legal and performs the changes to the board
+void move(int xSrc, int ySrc, int xDst, int yDst)
 {
-
+    
+    if(isLegalMove(xSrc, ySrc, xDst, yDst))
+    {
+        int piece = board[xSrc][ySrc];
+        board[xSrc][ySrc] = 0;
+        board[xDst][yDst] = piece;
+    }
 }
 
-void capture()
+// function checks if capture is legal and performs the changes to the board
+void capture(int xSrc, int ySrc, int xDst, int yDst)
 {
-
+    if(isLegalCapture(xSrc, ySrc, xDst, yDst))
+    {
+        int piece = board[xSrc][ySrc];
+        board[xSrc][ySrc] = 0;
+        board[xDst][yDst] = piece;
+    }
 }
+
+/*-----------------------------------------------------------------------------------------------
+function separates the input into parts
+command[] is will store:
+command[0] = command 
+command[1-4] = source and targets x and y values in order (xSrc, ySrc, xDst, yDst)
+-----------------------------------------------------------------------------------------------*/
+void splitstr(char str[INPUT_LENGTH], char commands[COMMAND_NUMBER][COMMAND_LENGTH])
+{
+    int word = 0;
+    int ch_num = 0;
+    for(int i=0; i<strlen(str); i++)
+    {
+        if(str[i]== ' ' || str[i]=='\0' || str[i]== '\n')
+        {
+            commands[word][ch_num] = '\0';
+            word++; //change to next word
+            ch_num=0; //resetting for next word
+        }
+        else
+        {
+            commands[word][ch_num] = str[i];
+            ch_num++;
+        }
+    }
+}
+
+// // Set the contents of command to null
+// void setCommandsToNull(char commands[COMMAND_NUMBER][COMMAND_LENGTH])
+// {
+//     int word = 0;
+//     int ch_num = 0;
+//     for(int i=0; i<INPUT_LENGTH; i++)
+//     {
+//         commands[word][ch_num] = '\0';
+//         if(ch_num == COMMAND_LENGTH - 1)
+//         {
+//             ch_num = 0;
+//             word++;
+//         }
+//     }
+// }
 
 int main(int argc, char const *argv[])
-{
-    setup();
-    printBoard();
+{    
+    while(1)
+    {
+        char input [INPUT_LENGTH];
+        char commands[COMMAND_NUMBER][COMMAND_LENGTH];
+        int xSrc_num, ySrc_num, xDst_num, yDst_num;
+        char xSrc_ch, ySrc_ch, xDst_ch, yDst_ch;
+        setup();
 
-    return 0;
+        // ask for input and tokenize it
+        printf("Enter a command\n");
+        fgets(input, INPUT_LENGTH, stdin);
+        splitstr(input, commands);
+        char *command = commands[0];
+        
+        if(strcasecmp(commands[0], "mv") == 0) // move command
+        {
+            printf("inmove");
+            if(commands[1][0] != '\0' && commands[2][0] != '\0')
+            {
+                xSrc_ch = commands[1][0];
+                ySrc_ch = commands[1][1];
+                xDst_ch = commands[2][0];
+                yDst_ch = commands[2][1];
+                int index = strcspn(X_LOCATION, xSrc_ch);
+                printf("index: %d\n", index);
+            }
+            else
+            {
+                printf("Incorrect input format, please use the following...\n");
+                printf("mv x0 y0 x1 y1\n");
+            }
+        }
+        else if(strcasecmp(commands[0], "cp") == 0) //capture command
+        {
+
+        }
+        else if(strcasecmp(commands[0], "show") == 0) // show command
+        {
+            printBoard();
+        }
+        else // incorrect command
+        {
+            printf("Incorrect command format detected, please use one of the following...\n");
+            printf("mv x0 y0 x1 y1\n");
+            printf("cp x0 y0 x1 y1\n");
+            printf("show\n");
+            printf("Command:%s", command);
+        }
+
+    }
 }
